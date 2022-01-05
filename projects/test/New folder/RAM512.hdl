@@ -1,0 +1,112 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/03/b/RAM512.hdl
+
+/**
+ * Memory of 512 registers, each 16 bit-wide. Out holds the value
+ * stored at the memory location specified by address. If load==1, then 
+ * the in value is loaded into the memory location specified by address 
+ * (the loaded value will be emitted to out from the next time step onward).
+ */
+
+CHIP RAM512 {
+    IN in[16], load, address[9];
+    OUT out[16];
+
+    PARTS:
+    DMux8Way(sel=address[6..8], in=load, a=bank00load, b=bank01load, c=bank02load, d=bank03load, e=bank04load, f=bank05load, g=bank06load, h=bank07load);
+    Mux8Way16(sel=address[6..8], a=RAM00, b=RAM01, c=RAM02, d=RAM03, e=RAM04, f=RAM05, g=RAM06, h=RAM07, out=out);
+
+    DMux8Way(sel=address[3..5], in=bank00load, a=bank00a, b=bank00b, c=bank00c, d=bank00d, e=bank00e, f=bank00f, g=bank00g, h=bank00h);
+    DMux8Way(sel=address[3..5], in=bank01load, a=bank01a, b=bank01b, c=bank01c, d=bank01d, e=bank01e, f=bank01f, g=bank01g, h=bank01h);
+    DMux8Way(sel=address[3..5], in=bank02load, a=bank02a, b=bank02b, c=bank02c, d=bank02d, e=bank02e, f=bank02f, g=bank02g, h=bank02h);
+    DMux8Way(sel=address[3..5], in=bank03load, a=bank03a, b=bank03b, c=bank03c, d=bank03d, e=bank03e, f=bank03f, g=bank03g, h=bank03h);
+    DMux8Way(sel=address[3..5], in=bank04load, a=bank04a, b=bank04b, c=bank04c, d=bank04d, e=bank04e, f=bank04f, g=bank04g, h=bank04h);
+    DMux8Way(sel=address[3..5], in=bank05load, a=bank05a, b=bank05b, c=bank05c, d=bank05d, e=bank05e, f=bank05f, g=bank05g, h=bank05h);
+    DMux8Way(sel=address[3..5], in=bank06load, a=bank06a, b=bank06b, c=bank06c, d=bank06d, e=bank06e, f=bank06f, g=bank06g, h=bank06h);
+    DMux8Way(sel=address[3..5], in=bank07load, a=bank07a, b=bank07b, c=bank07c, d=bank07d, e=bank07e, f=bank07f, g=bank07g, h=bank07h);
+
+    Mux8Way16(sel=address[3..5], a=RAM00a, b=RAM00b, c=RAM00c, d=RAM00d, e=RAM00e, f=RAM00f, g=RAM00g, h=RAM00h, out=RAM00);
+    Mux8Way16(sel=address[3..5], a=RAM01a, b=RAM01b, c=RAM01c, d=RAM01d, e=RAM01e, f=RAM01f, g=RAM01g, h=RAM01h, out=RAM01);
+    Mux8Way16(sel=address[3..5], a=RAM02a, b=RAM02b, c=RAM02c, d=RAM02d, e=RAM02e, f=RAM02f, g=RAM02g, h=RAM02h, out=RAM02);
+    Mux8Way16(sel=address[3..5], a=RAM03a, b=RAM03b, c=RAM03c, d=RAM03d, e=RAM03e, f=RAM03f, g=RAM03g, h=RAM03h, out=RAM03);
+    Mux8Way16(sel=address[3..5], a=RAM04a, b=RAM04b, c=RAM04c, d=RAM04d, e=RAM04e, f=RAM04f, g=RAM04g, h=RAM04h, out=RAM04);
+    Mux8Way16(sel=address[3..5], a=RAM05a, b=RAM05b, c=RAM05c, d=RAM05d, e=RAM05e, f=RAM05f, g=RAM05g, h=RAM05h, out=RAM05);
+    Mux8Way16(sel=address[3..5], a=RAM06a, b=RAM06b, c=RAM06c, d=RAM06d, e=RAM06e, f=RAM06f, g=RAM06g, h=RAM06h, out=RAM06);
+    Mux8Way16(sel=address[3..5], a=RAM07a, b=RAM07b, c=RAM07c, d=RAM07d, e=RAM07e, f=RAM07f, g=RAM07g, h=RAM07h, out=RAM07);
+
+    
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00a);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00b);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00c);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00d);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00e);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00f);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00g);
+      RAM64(in=in, load=bank00load, address=address[0..5], out=RAM00h);
+
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01a);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01b);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01c);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01d);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01e);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01f);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01g);
+      RAM64(in=in, load=bank01load, address=address[0..5], out=RAM01h);
+
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02a);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02b);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02c);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02d);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02e);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02f);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02g);
+      RAM64(in=in, load=bank02load, address=address[0..5], out=RAM02h);
+
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03a);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03b);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03c);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03d);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03e);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03f);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03g);
+      RAM64(in=in, load=bank03load, address=address[0..5], out=RAM03h);
+
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04a);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04b);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04c);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04d);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04e);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04f);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04g);
+      RAM64(in=in, load=bank04load, address=address[0..5], out=RAM04h);
+
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05a);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05b);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05c);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05d);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05e);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05f);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05g);
+      RAM64(in=in, load=bank05load, address=address[0..5], out=RAM05h);
+
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06a);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06b);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06c);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06d);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06e);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06f);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06g);
+      RAM64(in=in, load=bank06load, address=address[0..5], out=RAM06h);
+
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07a);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07b);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07c);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07d);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07e);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07f);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07g);
+      RAM64(in=in, load=bank07load, address=address[0..5], out=RAM07h);
+
+}

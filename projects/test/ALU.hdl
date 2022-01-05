@@ -1,0 +1,116 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/ALU.hdl
+
+/**
+ * The ALU (Arithmetic Logic Unit).
+ * Computes one of the following functions:
+ * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * according to 6 input bits denoted zx,nx,zy,ny,f,no.
+ * In addition, the ALU computes two 1-bit outputs:
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
+ * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ */
+
+// Implementation: the ALU logic manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) set x = 0        // 16-bit constant
+// if (nx == 1) set x = !x       // bitwise not
+// if (zy == 1) set y = 0        // 16-bit constant
+// if (ny == 1) set y = !y       // bitwise not
+// if (f == 1)  set out = x + y  // integer 2's complement addition
+// if (f == 0)  set out = x & y  // bitwise and
+// if (no == 1) set out = !out   // bitwise not
+// if (out == 0) set zr = 1
+// if (out < 0) set ng = 1
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute out = x + y (if 1) or x & y (if 0)
+        no; // negate the out output?
+
+    OUT 
+        out[16], // 16-bit output
+        zr, // 1 if (out == 0), 0 otherwise
+        ng; // 1 if (out < 0),  0 otherwise
+
+    PARTS:
+   // Put you code here:
+   Mux16(a=x, b=false, sel=zx, out=zxout); 
+   // create zxworker output (with operation sourced at x[16]) - oh, worker is just 'false'
+   // create nxworker output (with operation sourced at zxout)
+        Not16(in=zxout, out=nxworker1);
+    // Inc16(in=nxworker1, out=nxworker2);
+   Mux16(a=zxout, b=nxworker1, sel=nx, out=nxout);
+
+   Mux16(a=y, b=false, sel=zy, out=zyout);
+   // create zyworker output (with operation sourced at y[16]) - copy x - 'false'
+   // create nyworker output (with operation sourced at zyout) - copy x
+        Not16(in=zyout, out=nyworker1);
+    // Inc16(in=nyworker1, out=nyworker2);
+   Mux16(a=zyout, b=nyworker1, sel=ny, out=nyout);
+
+   Mux16(a=andout, b=addout, sel=f, out=addorand);
+    Add16(a=nxout, b=nyout, out=addout);
+    And16(a=nxout, b=nyout, out=andout);
+    // compute out = x + y (if 1)
+    // compute = x & y (if 0)
+
+    Not16(in=addorand, out=negwrkout1);          // flip bits to negate - 1
+    // Inc16(in=negwrkout1, out=negwrkout2);   // incriement to fix negative number (there is no -0)
+
+
+   Mux16(a=addorand, b=negwrkout1, sel=no, // handle 'no'
+   out=out, // output answer
+   out[15]=ng, // will be 1 if negative
+   out[15]=zrcheck15,
+   out[14]=zrcheck14,
+   out[13]=zrcheck13,
+   out[12]=zrcheck12,
+   out[11]=zrcheck11,
+   out[10]=zrcheck10,
+   out[9]=zrcheck9,
+   out[8]=zrcheck8,
+   out[7]=zrcheck7,
+   out[6]=zrcheck6,
+   out[5]=zrcheck5,
+   out[4]=zrcheck4,
+   out[3]=zrcheck3,
+   out[2]=zrcheck2,
+   out[1]=zrcheck1,
+   out[0]=zrcheck0
+   ); 
+
+    Or(a=zrcheck0, b=zrcheck1, out=zrstep1);
+    Or(a=zrstep1, b=zrcheck2, out=zrstep2);
+    Or(a=zrstep2, b=zrcheck3, out=zrstep3);
+    Or(a=zrstep3, b=zrcheck4, out=zrstep4);
+    Or(a=zrstep4, b=zrcheck5, out=zrstep5);
+    Or(a=zrstep5, b=zrcheck6, out=zrstep6);
+    Or(a=zrstep6, b=zrcheck7, out=zrstep7);
+    Or(a=zrstep7, b=zrcheck8, out=zrstep8);
+    Or(a=zrstep8, b=zrcheck9, out=zrstep9);
+    Or(a=zrstep9, b=zrcheck10, out=zrstep10);
+    Or(a=zrstep10, b=zrcheck11, out=zrstep11);
+    Or(a=zrstep11, b=zrcheck12, out=zrstep12);
+    Or(a=zrstep12, b=zrcheck13, out=zrstep13);
+    Or(a=zrstep13, b=zrcheck14, out=zrstep14);
+    Or(a=zrstep14, b=zrcheck15, out=zrstep15); // if no values are true this should be off
+    Not(in=zrstep15, out=zr); // turn value on if answer=0
+}
+
+
+
+// Implementation changed, old code below
+//    Mux16(a=answer, b=answer, sel=true, out=out, out[0]=moo); // send answer to output
+//    // Evaluate answer for zr/ng output
+
+//     // ng - just send first (last right to left) pin
+//     Mux16(a=answer, b=answer, sel=true, out[15]=ng);

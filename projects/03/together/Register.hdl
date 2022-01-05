@@ -1,0 +1,50 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/Register.hdl
+
+/**
+ * 16-bit register:
+ * If load[t] == 1 then out[t+1] = in[t]
+ * else out does not change
+ */
+
+CHIP Register {
+    IN in[16], load;
+    OUT out[16];
+
+    PARTS:
+    DFF(in=memIn00, out=out[0], out=memOut00);
+    Mux(a=memOut00, b=in[0], sel=load, out=memIn00);
+    DFF(in=memIn01, out=out[1], out=memOut01);
+    Mux(a=memOut01, b=in[1], sel=load, out=memIn01);
+    DFF(in=memIn02, out=out[2], out=memOut02);
+    Mux(a=memOut02, b=in[2], sel=load, out=memIn02);
+    DFF(in=memIn03, out=out[3], out=memOut03);
+    Mux(a=memOut03, b=in[3], sel=load, out=memIn03);
+    DFF(in=memIn04, out=out[4], out=memOut04);
+    Mux(a=memOut04, b=in[4], sel=load, out=memIn04);
+    DFF(in=memIn05, out=out[5], out=memOut05);
+    Mux(a=memOut05, b=in[5], sel=load, out=memIn05);
+    DFF(in=memIn06, out=out[6], out=memOut06);
+    Mux(a=memOut06, b=in[6], sel=load, out=memIn06);
+    DFF(in=memIn07, out=out[7], out=memOut07);
+    Mux(a=memOut07, b=in[7], sel=load, out=memIn07);
+    DFF(in=memIn08, out=out[8], out=memOut08);
+    Mux(a=memOut08, b=in[8], sel=load, out=memIn08);
+    DFF(in=memIn09, out=out[9], out=memOut09);
+    Mux(a=memOut09, b=in[9], sel=load, out=memIn09);
+    DFF(in=memIn10, out=out[10], out=memOut10);
+    Mux(a=memOut10, b=in[10], sel=load, out=memIn10);
+    DFF(in=memIn11, out=out[11], out=memOut11);
+    Mux(a=memOut11, b=in[11], sel=load, out=memIn11);
+    DFF(in=memIn12, out=out[12], out=memOut12);
+    Mux(a=memOut12, b=in[12], sel=load, out=memIn12);
+    DFF(in=memIn13, out=out[13], out=memOut13);
+    Mux(a=memOut13, b=in[13], sel=load, out=memIn13);
+    DFF(in=memIn14, out=out[14], out=memOut14);
+    Mux(a=memOut14, b=in[14], sel=load, out=memIn14);
+    DFF(in=memIn15, out=out[15], out=memOut15);
+    Mux(a=memOut15, b=in[15], sel=load, out=memIn15);
+    // I could do this with mux16, but dff is single channel and it would be more messy and still be the same core components
+}
