@@ -1,0 +1,6 @@
+a=selected register
+m=current register (this is done because they may differ DURING this operation at some point)
+d=data address
+
+@1 
+sets 'register A' to 1 (could also be set to name? address?)

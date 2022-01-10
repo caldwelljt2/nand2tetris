@@ -1,0 +1,67 @@
+// Fill.asm
+
+// Fills the 'screen' with black,
+// one pixel at a time, when any 
+// key is pressed and held.
+
+// When the key is released, the 
+// screen should clear.
+
+
+// i = 0
+
+@i
+M=0
+
+(LOOP)
+ // color = 0xFFFF (black) = !0
+ D=0
+ D=!D
+ @color
+ M=D
+
+ @KBD        // Location of keypress code
+     // is RAM[24576] = RAM(0x600)
+ D=M         // D != 0 if a key is pressed
+
+ @SKIP_WHITE
+ D;JNE
+
+
+ // if (key == 0 )
+ // {
+ //   color = 0 (white)
+
+ @color
+ M=0
+
+ // }
+
+
+(SKIP_WHITE)
+ // Ensure that the offset is 
+ // within the screen's 8K
+ // memory area
+        @i
+ M=M+1
+ @8191
+ D=A
+ @i
+ M=M&D
+
+
+ @i
+ D=M
+ @SCREEN
+ D=D+A     
+ @target   
+ M=D
+ @color
+ D=M
+ @target   
+ A=M      // GOTO Pixel specified by target
+ M=D
+
+
+ @LOOP // infinite loop, baby
+ 0;JMP

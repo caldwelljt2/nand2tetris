@@ -20,4 +20,10 @@ CHIP Computer {
 
     PARTS:
     // Put your code here:
+
+    // CPU(inM=, instruction=, reset=, outM=, writeM=, addressM=, pc=);
+
+    // memory - RAM16K(in=, load=, address=, out=);
+    // memory - screen
+    // memory - RAM
 }
