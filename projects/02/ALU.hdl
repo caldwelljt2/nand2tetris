@@ -46,7 +46,7 @@ CHIP ALU {
    Mux16(a=x, b=false, sel=zx, out=zxout); 
    // create zxworker output (with operation sourced at x[16]) - oh, worker is just 'false'
    // create nxworker output (with operation sourced at zxout)
-        Not16(in=zxout, out=nxworker1);
+   Not16(in=zxout, out=nxworker1);
     // Inc16(in=nxworker1, out=nxworker2);
    Mux16(a=zxout, b=nxworker1, sel=nx, out=nxout);
 

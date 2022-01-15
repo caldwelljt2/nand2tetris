@@ -27,5 +27,40 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // // Put your code here:
+    // RAM16K(in=in, load=load, address=address[0..13], out=memoryBus);  // 0 to 16383 (16384 address or 14 bits)
+    // Screen(in=in, load=load, address=address[0..12], out=screenBus);  // 16384 to 24575 (8192 addresses or 13 bit address)
+    // Keyboard(out=keyboardBus); // 24576 (1 bit address)
+    
+    // Mux4Way16(a=memoryBus, b=memoryBus, c=screenBus, d=keyboardBus, sel=address[13..14], out=out);
+    // // Mux16(a=, b=, sel=, out=);
+    // // DMux8Way(sel=address)
+    DMux(in=load, sel=address[14], a=ramLoad, b=ioLoad);
+    // DMux4Way(sel=address[12..13],
+    //  in=load,
+    //  a=bank00load,
+    //  b=bank01load,
+    //  c=bank02load,
+    //  d=bank03load
+    // //  e=bank04load,
+    // //  f=bank05load,
+    // //  g=bank06load,
+    // //  h=bank07load
+    //  );
+    Mux16(a=ramOut, b=ioOut, sel=address[14], out=out);
+    Mux16(a=screenOut, b=keyboardOut, sel=address[13], out=ioOut);
+    // Mux4Way16(sel=address[12..13],
+    //  a=RAM00,
+    //  b=RAM01,
+    //  c=RAM02,
+    //  d=RAM03,
+    // //  e=RAM04,
+    // //  f=RAM05,
+    // //  g=RAM06,
+    // //  h=RAM07,
+    //  out=out
+    //  );
+    RAM16K(in=in, load=ramLoad, address=address[0..13], out=ramOut);
+    Screen(in=in, load=ioLoad, address=address[0..12], out=screenOut);
+    Keyboard(out=keyboardOut);
 }

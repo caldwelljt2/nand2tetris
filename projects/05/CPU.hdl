@@ -39,5 +39,60 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+
+    Not(in=instruction[15], out=isA); // if(instruction[15] == 0) then isA == 1;    
+    Mux(b=instruction[5], sel=instruction[15], out=isCwA); // if C instruction = 1, then look at ins5 / if A connect nothing (0==off)
+    Mux16(a=instruction, b=ALUout, sel=isCwA, out=inAReg); // if C is = 1 + A ref in instruction, use ALU output, otherwise get other from instruction
+
+    Or(a=isA, b=isCwA, out=loadA); // load A if isA OR instruction[15] + w/instruction[5] passed throgh
+
+    // JMP or Count (not both)
+    ARegister(in=inAReg, load=loadA, out=outAreg, out[0..14]=addressM);  // send address out addressM and on to MUX (may be replaced by M)
+  
+    Mux(b=instruction[4], sel=instruction[15],out=loadD);                   // instruction[15] && dest==D
+    DRegister(in=ALUout, load=loadD, out=regDout);
+      
+
+      // JMP or Count (not both)
+    Mux16(a=outAreg, b=inM, sel=instruction[12], out=regAorM);            // look at "a" from comp inst, if instruction[12] == 1, swap A for M
+      
+    ALU(x=regDout,
+        y=regAorM,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=ALUout,
+        out=outM,
+        zr=zr,
+        ng=ng
+    );
+        
+    // Setup flags and PC
+    
+    Or(a=ng, b=zr, out=isNeg);
+    Not(in=isNeg, out=isPos);
+    
+    And(a=instruction[15], b=instruction[3], out=writeM);  // write M if inst[15] and inst[3] (M) = 1 (on)
+    
+
+    // analyze jump v. table
+    And(a=ng, b=instruction[2], out=JLT);  // if j1 = on, check if out < 0
+    And(a=zr, b=instruction[1], out=JEQ);  // if j2 = on, check if out = 0 ()
+    And(a=isPos, b=instruction[0], out=JGT);  // if j3 = on, check if out > 0 (isPos)
+
+    // since we have already verified j1 to j3 with >=< out, we can can just OR the rest
+    Or(a=JEQ, b=JLT, out=JLE); // if JEQ and JLT = 1, then JLE = 1 (same as j1=1,j2=1)
+    Or(a=JLE, b=JGT, out=JMP); // if JLE = 1 and JGT = 1, then JMP = 1 (same as j1=1,j2=1,j3=1)
+
+    // if this a C instruction, we can jump if JMP = 1
+    And(a=instruction[15], b=JMP, out=doJMP);   // doJMP? if(instruction[15] && jump)
+    
+    // if we are Jumping, don't increase count
+    Not(in=doJMP, out=inc);
+
+    // JMP or Count (not both), and only send address 0-14 out pc interface
+    PC(in=outAreg, inc=inc, load=doJMP, reset=reset, out[0..14]=pc);
 }
