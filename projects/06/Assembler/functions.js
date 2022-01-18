@@ -204,29 +204,38 @@ const getJump = (jumpName) => {
 
 const makeBinary = (commandLine) => {
     const commandObject = {}
-    // commandObject.original = commandLine
+    commandObject.type = ""
     if (commandLine.includes('(')) { commandObject.type = 'L' }
     if (commandLine.includes('@')) { commandObject.type = 'A' }
     if (commandLine.includes('=')) { commandObject.type = 'C' }
-    if (commandLine.includes(';')) { commandObject.type = 'J' }
-
+    if (commandLine.includes(';')) { commandObject.type += 'J' }
+    
     if (commandObject.type == "A") {
         address = commandLine.split("@")[1]
-        // test if only number
+        // test if only number is present
         if (address * 1 == address) {
             commandObject.address = address * 1
         } else {
+        // if we are not looking at just a number after the @ sign, assume it is a variable, and call getAdd to see if it is in symbols and/or add it if it isn't there yet    
             commandObject.address = getAddSymbol(address)
         }
         commandObject.binaryOutput = "0" + (commandObject.address * 1).toString(2).padStart(15, '0')
+        
+        return commandObject.binaryOutput
     }
 
     if (commandObject.type == "C") {
         destination = commandLine.split("=")[0]
         command = commandLine.split("=")[1]
+
+        // lookup known values
         destinationAsBinary = getDestination(destination)
         commandAsBinary = getCommand(command)
+
+        // assume the one we don't have is blank
         jumpAsBinary = "000"
+
+        // construct our binary command
         commandObject.binaryOutput = "111" + commandAsBinary + destinationAsBinary + jumpAsBinary
     }
 
@@ -234,21 +243,34 @@ const makeBinary = (commandLine) => {
         command = commandLine.split(";")[0]
         jump = commandLine.split(";")[1]
 
+        // lookup known values
         commandAsBinary = getCommand(command)
         jumpAsBinary = getJump(jump)
+
+        // assume the one we don't have is blank
         destinationAsBinary = "000"
 
+        // construct our binary command
         commandObject.binaryOutput = "111" + commandAsBinary + destinationAsBinary + jumpAsBinary
-
     }
 
-    // commandObject.front = commandLine.split("=")[0] + ""
-    // middleEnd = commandLine.split("=")[1] + ""
-    // commandObject.middleaddress = middleEnd.split(";")[0] + ""
-    // commandObject.end = middleEnd.split(";")[1] + ""
-    // commandObject.original = commandLine.split(";")[1] + ""
+    // if all three are present, overwrite values with correct ones
+    if (commandObject.type == "CJ") {
+        destination = commandLine.split("=")[0]
+        command = commandLine.split("=")[1].split(";")[0] // tricky but divided up so that it should find the middle
+        jump = commandLine.split(";")[1]
 
-    return commandObject.binaryOutput
+        // lookup all values
+        commandAsBinary = getCommand(command)
+        jumpAsBinary = getJump(jump)
+        destinationAsBinary = getDestination(destination)
+
+        // construct our binary command
+        commandObject.binaryOutput = "111" + commandAsBinary + destinationAsBinary + jumpAsBinary
+    }
+
+        // return just our binary command
+        return commandObject.binaryOutput
 }
 
 // module.exports = { makeBinary, symbolsArray }
