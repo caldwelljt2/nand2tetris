@@ -1,0 +1,9 @@
+This file is required, but contents don't matter.
+
+This is my own implementation in Javascript of an assembler for the hack machine code. It currently outputs two files, the assembly and a symbols file. the symbols file is ONLY for troubleshooting issues and is simply named based on the name given for output (
+
+Usage: node assembler.js FILENAME.asm FILENAME.hack
+
+Output:
+FILENAME.hack - Binary executable code for hack
+FILENAME.hacksymbols - compiled symbols file used during the assembler's operation.
