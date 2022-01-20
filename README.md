@@ -16,18 +16,18 @@ more importantly, truely grasps hardware i/o up front, then I would give this pr
 Even if you do not complete the entire project, the first half (Untits 1 to 6) will help in
 ways I cannot fully articulate right now.
 
-        -Jonathan Caldwell
+-Jonathan Caldwell
         
-        p.s. Sorry for any messy code, I hadn't originally intended to upload this for public
-        consumption and frequently left test lines, comments, etc, inline so that I could
-        reference them as I moved forward.
-        
-        100% of this code is mine, and roughly 95% of it was written without looking at anyone
-        else's code. (The most notable exceptions would be properly wiring the ALU to the registers
-        inside the CPU during the last project (Project 6). I found reviewing other people's code,
-        even though it was written in a different language, far more useful than the built in test
-        output. For instance, it wasn't readily apparent what defualts to use in the event symbolic
-        code 'left out' default/optional components (i.e. destination or Jump).
+p.s. Sorry for any messy code, I hadn't originally intended to upload this for public
+consumption and frequently left test lines, comments, etc, inline so that I could
+reference them as I moved forward.
+
+100% of this code is mine, and roughly 95% of it was written without looking at anyone
+else's code. (The most notable exceptions would be properly wiring the ALU to the registers
+inside the CPU during the last project (Project 6). I found reviewing other people's code,
+even though it was written in a different language, far more useful than the built in test
+output. For instance, it wasn't readily apparent what defualts to use in the event symbolic
+code 'left out' default/optional components (i.e. destination or Jump).
 
 ## Course Details
 
