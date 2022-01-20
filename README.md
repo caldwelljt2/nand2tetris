@@ -10,11 +10,11 @@ doubt modern computing is more complex than the basic hack CPU I contstructed he
 can say with some confidence, I at least _understand_ it. I now also understand, in a way
 I never fully grasped before, why programming in assembly is so difficult and time consuming.
 
-For anyone else in the various computing fields read this, I cannot recommend it high enough.
-Unless your one of those few that either constructed a processor as part of your CS degree or
-more importantly, truely grasped it and its implications, then I would give this project a try.
-Even if you cannot complete the entire project, the first half (Untits 1 to 6) will help in
-ways I cannot fully articulate.
+For anyone else in related computing fields reading this this. I cannot recommend it high enough.
+Unless your one of the few that either built your own processor as part of a CS degree or
+more importantly, truely grasps hardware i/o up front, then I would give this project a try.
+Even if you do not complete the entire project, the first half (Untits 1 to 6) will help in
+ways I cannot fully articulate right now.
 
         -Jonathan Caldwell
         
