@@ -3,8 +3,8 @@ const openParenth = /\(/g
 const closedParenth = /\)/g
 const comments = /\/\*[\s\S]*?\*\/|\/\/.*/g
 const whitespace = /\s/g
-let variableIndex = 16 // this is where additional variables will start 
-let symbolsStart = 16
+// let variableIndex = 16 
+let symbolsStart = 16 // this is where additional variables will start 
 
 const symbolsArray = [
     ['SCREEN', "16384"],
@@ -273,7 +273,6 @@ const makeBinary = (commandLine) => {
         return commandObject.binaryOutput
 }
 
-// module.exports = { makeBinary, symbolsArray }
 
 module.exports = {
     openParenth,
