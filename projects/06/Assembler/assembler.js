@@ -1,6 +1,17 @@
 // load file library
 const fs = require('fs');
 
+// load some values and core binary function moved out to keep main file cleaner
+const {
+    symbolsArray,  // starting array, intention is to mutate it as we go
+    openParenth, // left over from initial regex approach but still used
+    closedParenth, // same as above
+    comments, // regex expression to identify all comments for removal
+    whitespace, // could be added with above, but left for simplicity, identifys any leftover whitespace for removal
+    makeBinary // main function for constructing a binary A or C instruction (assumes there are no loops present, variables are OK)
+} = require('./functions')
+
+console.log('starting to work')
 
 // Make sure there is a file on the command line.
 if (process.argv.length < 3) {
@@ -12,16 +23,6 @@ if (process.argv.length < 3) {
   fs.readFile(filename, 'utf8', function(err, myProg) {
     if (err) throw err;
     console.log('OK: ' + filename + ' will be assmbled as ' + filenameOutput);
-    
-    // load some values and core binary function moved out to keep main file cleaner
-    const {
-        symbolsArray,  // starting array, intention is to mutate it as we go
-        openParenth, // left over from initial regex approach but still used
-        closedParenth, // same as above
-        comments, // regex expression to identify all comments for removal
-        whitespace, // could be added with above, but left for simplicity, identifys any leftover whitespace for removal
-        makeBinary // main function for constructing a binary A or C instruction (assumes there are no loops present, variables are OK)
-    } = require('./functions')
     
     // remove comments and whitspace from array
     const sanitizeArray = (array) => {                            
