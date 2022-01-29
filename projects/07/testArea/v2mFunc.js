@@ -76,11 +76,100 @@ const makeAsmCommandPush = (obj) => {
             `@SP`,
             `M=M+1`
         ]
-    } else {
+    } 
+    else if (obj.location == 'local') {
+        let localNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@LCL`,
+            `D=D+M`,
+            // `M=M-1`,  // ooops, we don't change this value, it's a base
+            `A=D`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`
+        ]
+    }
+    else if (obj.location == 'argument') {
+        let argNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@ARG`,
+            `D=D+M`,
+            // `M=M-1`, // ooops, we don't change this value, it's a base
+            `A=D`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`
+        ]
+    }
+    else if (obj.location == 'this') {
+        let thisNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@THIS`,
+            `D=D+M`,
+            // `M=M-1`,  // ooops, we don't change this value, it's a base
+            `A=D`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`
+        ]
+    }
+    else if (obj.location == 'that') {
+        let thatNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@THAT`,
+            `D=D+M`,
+            // `M=M-1`,  // ooops, we don't change this value, it's a base
+            `A=D`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`
+        ]
+    }
+    else if (obj.location == 'temp') {
+        let tempNum = Number(obj.arg) + 5 // unused??
+        if (tempNum > 12) { return 'TEMP VAR TOO LARGE (in push)' }
+        return [
+            `@${tempNum}`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`,
+            // `@SP`, // not needed if combined above
+            // `M=M-1`
+        ]
+    } else if (obj.location == 'pointer') {
+        let pointerNum = Number(obj.arg) + 3
+        if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
+        return [
+            `@${pointerNum}`,
+            `D=M`,
+            `@SP`,
+            `M=M+1`,
+            `A=M-1`,
+            `M=D`,
+        ]
+
+    }
+    else {
         console.log(obj)
-        return `
-        INVALID PUSH (FOR NOW)
-        `
+        return [`ELSE: INVALID PUSH`, ` (FOR NOW)`]
     }
 }
 
@@ -98,7 +187,122 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
+    } else if (obj.location == 'local') {
+        let localNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@LCL`,
+            `D=D+M`,
+            `@R13`,
+            `M=D`,
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@R13`,
+            `A=M`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+    } else if (obj.location == 'argument') {
+        let argNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@ARG`,
+            `D=D+M`,
+            `@R13`,
+            `M=D`,
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@R13`,
+            `A=M`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+    } else if (obj.location == 'this') {
+        let thisNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@THIS`,
+            `D=D+M`,
+            `@R13`,
+            `M=D`,
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@R13`,
+            `A=M`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+    } else if (obj.location == 'that') {
+        let thatNum = Number(obj.arg) + 0 // unused??
+        return [
+            `@${obj.arg}`,
+            `D=A`,
+            `@THAT`,
+            `D=D+M`,
+            `@R13`,
+            `M=D`,
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@R13`,
+            `A=M`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+    } else if (obj.location == 'temp') {
+        let tempNum = Number(obj.arg) + 5 // unused??
+        if (tempNum > 12) { return 'TEMP VAR TOO LARGE (in pop)' }
+        return [
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@${tempNum}`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+
+        // return [
+        //     `@${obj.arg}`,
+        //     `D=A`,
+        //     `@TEMP`,
+        //     `D=D+M`,
+        //     `@R13`,
+        //     `M=D`,
+        //     `@SP`,
+        //     `A=M-1`,
+        //     `D=M`,
+        //     `@R13`,
+        //     `A=M`,
+        //     `M=D`,
+        //     `@SP`,
+        //     `M=M-1`
+        // ]
+    } else if (obj.location == 'pointer') {
+        let pointerNum = Number(obj.arg) + 3
+        if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
+        return [
+            `@SP`,
+            `A=M-1`,
+            `D=M`,
+            `@${pointerNum}`,
+            `M=D`,
+            `@SP`,
+            `M=M-1`
+        ]
+
     }
+    else { return [`POP: `, `NOT IMPLIMENTED YET`] }
 }
 
 const makeAsmCommandLogic = (obj) => {
@@ -111,7 +315,7 @@ const makeAsmCommandLogic = (obj) => {
     if (obj.command == 'add') {
         logic = 'M+D'
         // secondMove assumed
-    }
+    } 
     if (obj.command == 'neg') {
         logic = '-D'
         secondMove = '' // don't move 2nd time (this will leave A=A)!!
@@ -122,115 +326,113 @@ const makeAsmCommandLogic = (obj) => {
     }
     if (obj.command == 'or') {
         logic = 'D|M'
-        // secondMove assumed
+        // secondMove assumed 
     }
     if (obj.command == 'not') {
-        logic = '!D'
+        logic = '!D' 
         secondMove = '' // don't move 2nd time (this will leave A=A)!!
     }
     if (obj.command == 'lt') {
         uniqindx = uniqindx + 1
         return [
-
             `@SP`,
-                `A=M-1`,
-                `D=M`,
-                `A=A-1`,
-                `D=M-D`,
-                `@IS.${uniqindx}`,
-                `D;JLT`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=0`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(IS.${uniqindx})`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=-1`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(END.${uniqindx})`,
+            `A=M-1`,
+            `D=M`,
+            `A=A-1`,
+            `D=M-D`,
+            `@IS.${uniqindx}`,
+            `D;JLT`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=0`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(IS.${uniqindx})`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=-1`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(END.${uniqindx})`,
         ]
-    
+
     }
     if (obj.command == 'gt') {
         uniqindx = uniqindx + 1
         return [
-
             `@SP`,
-                `A=M-1`,
-                `D=M`,
-                `A=A-1`,
-                `D=M-D`,
-                `@IS.${uniqindx}`,
-                `D;JGT`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=0`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(IS.${uniqindx})`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=-1`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(END.${uniqindx})`
+            `A=M-1`,
+            `D=M`,
+            `A=A-1`,
+            `D=M-D`,
+            `@IS.${uniqindx}`,
+            `D;JGT`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=0`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(IS.${uniqindx})`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=-1`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(END.${uniqindx})`
         ]
     }
     if (obj.command == 'eq') {
         uniqindx = uniqindx + 1
         return [`@SP`,
-                `A=M-1`,
-                `D=M`,
-                `A=A-1`,
-                `D=M-D`,
-                `@IS.${uniqindx}`,
-                `D;JLT`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=0`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(IS.${uniqindx})`,
-                `@SP`,
-                `A=M`,
-                `A=A-1`,
-                `A=A-1`,
-                `M=-1`,
-                `D=A+1`,
-                `@SP`,
-                `M=D`,
-                `@END.${uniqindx}`,
-                `0;JMP`,
-                `(END.${uniqindx})`,
-                
+            `A=M-1`,
+            `D=M`,
+            `A=A-1`,
+            `D=M-D`,
+            `@IS.${uniqindx}`,
+            `D;JEQ`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=0`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(IS.${uniqindx})`,
+            `@SP`,
+            `A=M`,
+            `A=A-1`,
+            `A=A-1`,
+            `M=-1`,
+            `D=A+1`,
+            `@SP`,
+            `M=D`,
+            `@END.${uniqindx}`,
+            `0;JMP`,
+            `(END.${uniqindx})`,
+
         ]
     }
 

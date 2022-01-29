@@ -1,1 +1,1 @@
-nodejs debugx
+nodejs debug

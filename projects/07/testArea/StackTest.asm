@@ -468,6 +468,3 @@ M=!D
 D=A+1
 @SP
 M=D
-(ENDLOOP)
-@ENDLOOP
-0;JMP

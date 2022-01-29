@@ -18,7 +18,7 @@ D=M
 A=A-1
 D=M-D
 @IS.1
-D;JEQ
+D;JLT
 @SP
 A=M
 A=A-1
@@ -61,7 +61,7 @@ D=M
 A=A-1
 D=M-D
 @IS.2
-D;JEQ
+D;JLT
 @SP
 A=M
 A=A-1
@@ -104,7 +104,7 @@ D=M
 A=A-1
 D=M-D
 @IS.3
-D;JEQ
+D;JLT
 @SP
 A=M
 A=A-1
