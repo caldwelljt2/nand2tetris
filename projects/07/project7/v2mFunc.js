@@ -1,14 +1,20 @@
-let testObj = { command: 'push', location: 'constant', arg: '888' }
-let testObj2 = { command: 'sub' }
-let uniqindx = 0
+// ### Temp Test Area, should be safe to ignore
+
+// let testObj = { command: 'push', location: 'constant', arg: '888' }
+// let testObj2 = { command: 'sub' }
+
+// ### Start of function exports 
+let uniqindx = 0  // used to create unique symbol names in ASM files, dirty but works, leave global to avoid overlapping
 
 
-// setup some search criteria
+// setup some regex variables
 const openParenth = /\(/g
 const closedParenth = /\)/g
 const comments = /\/\*[\s\S]*?\*\/|\/\/.*/g
 const whitespace = /\s/g
 
+
+// ### Functions for creating clean arrays to work with
 const removeComments = (string) => {
     return string.replace(comments, '')
 }
@@ -28,8 +34,10 @@ const cleanArray = (array) => {
     return cleanArray
 }
 
+
+// ### Let's make some objects out of our VM commands
 const makeComObj = (array) => {
-    const arrayWithOjb = array.map((line) => {
+    const arrayWithObj = array.map((line) => {
         let lineAsArray = line.split(" ")
         let obj = {}
         obj.command = lineAsArray[0]
@@ -37,16 +45,19 @@ const makeComObj = (array) => {
         obj.arg = lineAsArray[2]
         return obj
     })
-    return arrayWithOjb
+    return arrayWithObj
 }
 
+// ### Functions for creating valid assembly commands based on VM language input
 const makeAsmCommand = (obj) => {
     // console.log(obj)
     if (obj.command == 'push') {
         return makeAsmCommandPush(obj)
-    } else if (obj.command == 'pop') {
+    } 
+    else if (obj.command == 'pop') {
         return makeAsmCommandPop(obj)
-    } else {
+    } 
+    else {
         return makeAsmCommandLogic(obj)
     }
 }
@@ -63,7 +74,8 @@ const makeAsmCommandPush = (obj) => {
             `@SP`,
             `M=M+1`
         ]
-    } else if (obj.location == 'static') {
+    } 
+    else if (obj.location == 'static') {
         console.log(obj)
         let staticNum = Number(obj.arg) + 16
         if (staticNum > 255) { return 'STATIC VAR TOO LARGE (in push)' }
@@ -76,7 +88,7 @@ const makeAsmCommandPush = (obj) => {
             `@SP`,
             `M=M+1`
         ]
-    } 
+    }
     else if (obj.location == 'local') {
         let localNum = Number(obj.arg) + 0 // unused??
         return [
@@ -154,7 +166,8 @@ const makeAsmCommandPush = (obj) => {
             // `@SP`, // not needed if combined above
             // `M=M-1`
         ]
-    } else if (obj.location == 'pointer') {
+    } 
+    else if (obj.location == 'pointer') {
         let pointerNum = Number(obj.arg) + 3
         if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
         return [
@@ -187,7 +200,8 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } else if (obj.location == 'local') {
+    } 
+    else if (obj.location == 'local') {
         let localNum = Number(obj.arg) + 0 // unused??
         return [
             `@${obj.arg}`,
@@ -205,7 +219,8 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } else if (obj.location == 'argument') {
+    } 
+    else if (obj.location == 'argument') {
         let argNum = Number(obj.arg) + 0 // unused??
         return [
             `@${obj.arg}`,
@@ -223,7 +238,8 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } else if (obj.location == 'this') {
+    } 
+    else if (obj.location == 'this') {
         let thisNum = Number(obj.arg) + 0 // unused??
         return [
             `@${obj.arg}`,
@@ -241,7 +257,8 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } else if (obj.location == 'that') {
+    } 
+    else if (obj.location == 'that') {
         let thatNum = Number(obj.arg) + 0 // unused??
         return [
             `@${obj.arg}`,
@@ -259,7 +276,8 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } else if (obj.location == 'temp') {
+    } 
+    else if (obj.location == 'temp') {
         let tempNum = Number(obj.arg) + 5 // unused??
         if (tempNum > 12) { return 'TEMP VAR TOO LARGE (in pop)' }
         return [
@@ -272,23 +290,8 @@ const makeAsmCommandPop = (obj) => {
             `M=M-1`
         ]
 
-        // return [
-        //     `@${obj.arg}`,
-        //     `D=A`,
-        //     `@TEMP`,
-        //     `D=D+M`,
-        //     `@R13`,
-        //     `M=D`,
-        //     `@SP`,
-        //     `A=M-1`,
-        //     `D=M`,
-        //     `@R13`,
-        //     `A=M`,
-        //     `M=D`,
-        //     `@SP`,
-        //     `M=M-1`
-        // ]
-    } else if (obj.location == 'pointer') {
+    } 
+    else if (obj.location == 'pointer') {
         let pointerNum = Number(obj.arg) + 3
         if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
         return [
@@ -302,7 +305,7 @@ const makeAsmCommandPop = (obj) => {
         ]
 
     }
-    else { return [`POP: `, `NOT IMPLIMENTED YET`] }
+    else { return [`POP: `, `NOT IMPLIMENTED YET`] }  // should use proper error reporting, this can cause failures if output isn't correct
 }
 
 const makeAsmCommandLogic = (obj) => {
@@ -315,7 +318,7 @@ const makeAsmCommandLogic = (obj) => {
     if (obj.command == 'add') {
         logic = 'M+D'
         // secondMove assumed
-    } 
+    }
     if (obj.command == 'neg') {
         logic = '-D'
         secondMove = '' // don't move 2nd time (this will leave A=A)!!
@@ -329,7 +332,7 @@ const makeAsmCommandLogic = (obj) => {
         // secondMove assumed 
     }
     if (obj.command == 'not') {
-        logic = '!D' 
+        logic = '!D'
         secondMove = '' // don't move 2nd time (this will leave A=A)!!
     }
     if (obj.command == 'lt') {
@@ -409,7 +412,7 @@ const makeAsmCommandLogic = (obj) => {
             `A=A-1`,
             `D=M-D`,
             `@IS.${uniqindx}`,
-            `D;JLT`,
+            `D;JEQ`,
             `@SP`,
             `A=M`,
             `A=A-1`,
@@ -448,14 +451,36 @@ const makeAsmCommandLogic = (obj) => {
     ]
 }
 
+// ### Path and filename modifications ###
 
 
-// console.log(makeAsmCommand(testObj2))
+const extractFilename = (path) => {
+    const pathArray = path.split("/");
+    const lastIndex = pathArray.length - 1;
+    return pathArray[lastIndex];
+};
 
+const extractFilePath = (path) => {
+    const pathArray = path.split("/");
+    const lastIndex = pathArray.length - 1;
+    pathArray.pop(lastIndex)
+    pathArray.push('')
+    return pathArray.join('/');
+};
+
+
+// ### EXPORTS ###
 module.exports = {
     makeArray,
     removeComments,
     cleanArray,
     makeComObj,
-    makeAsmCommand
+    makeAsmCommand,
+    extractFilename,
+    extractFilePath
 }
+
+
+
+// ### Debug Area (i still use console.log) ###
+// console.log(makeAsmCommand(testObj2))

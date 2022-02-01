@@ -1,25 +1,3 @@
-// fileName = './MemoryAccess/StaticTest/StaticTest.vm'
-// // fileName = './MemoryAccess/StaticTest/myTest.vm'
-// fileName = './StackArithmetic/StackTest/StackTest.vm'
-// let fileNameOutput = './garbageTest.asm'
-
-
-const extractFilename = (path) => {
-    const pathArray = path.split("/");
-    const lastIndex = pathArray.length - 1;
-    return pathArray[lastIndex];
-};
-
-const extractFilePath = (path) => {
-    const pathArray = path.split("/");
-    const lastIndex = pathArray.length - 1;
-    pathArray.pop(lastIndex)
-    pathArray.push('')
-    return pathArray.join('/');
-};
-
-
-
 
 const {
     makeArray,
@@ -27,32 +5,34 @@ const {
     cleanArray,
     makeComObj,
     makeAsmCommand,
+    extractFilename,
+    extractFilePath
 } = require('./v2mFunc')
+
+// let {uniqueName} = require('./v2mFunc')
 
 const fs = require('fs')
 
 if (process.argv.length < 2) {
-    console.log('Usage: node ' + process.argv[1] + ' FILENAME.asm '); // FILENAME.hack (optional)
+    console.log('Usage: node ' + process.argv[1] + ' FILENAME.asm '); // removed custom asm naming for testing to work
     process.exit(1)
 }
 
-const filePath = process.argv[2] // input file
-const fileName = extractFilename(filePath)
-const fileOutputDirectory = extractFilePath(filePath)
+const fileNameInput = process.argv[2] // input file
+const fileName = extractFilename(fileNameInput)
+const fileOutputDirectory = extractFilePath(fileNameInput)
 
 let fileNameOutput = fileName.split('.')[0] + '.asm'
-// console.log('removing' + fileOutputDirectory)
+let uniqueName = fileName.split('.')[0]
+console.log('my unqName' + uniqueName)
+console.log('fileNameInput: ' + fileNameInput + " or just name: " + fileName)
+console.log('output file: ' + fileOutputDirectory + fileNameOutput)
 
-console.log('filePath: ' + filePath)
-console.log('your input fileName: ' + fileName + ' output : ' + fileOutputDirectory+fileNameOutput)
-
-fs.readFile(filePath, 'utf8', function (err, vmCode) {
-    // const outArray = []
+fs.readFile(fileNameInput, 'utf8', function (err, vmCode) {
     const vmCodeNoCom = removeComments(vmCode)
     const codeArray = makeArray(vmCodeNoCom)
     const usableArray = cleanArray(codeArray)
-    // step 1 - parse all lines into an array
-    const codeWithObj = makeComObj(usableArray)
+    const codeWithObj = makeComObj(usableArray, uniqueName)
 
     const outArray = codeWithObj.map((line) => {
         return makeAsmCommand(line).join('\r\n') // make command as an array then join them here for simplicity
