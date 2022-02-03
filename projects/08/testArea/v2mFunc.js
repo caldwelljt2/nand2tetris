@@ -35,7 +35,8 @@ const cleanArray = (array) => {
 }
 
 
-// ### Let's make some objects out of our VM commands
+// ### Make objects out of VM commands
+
 const makeComObj = (array, uniqueName) => {
     const arrayWithObj = array.map((line) => {
         let lineAsArray = line.split(" ")
@@ -51,17 +52,49 @@ const makeComObj = (array, uniqueName) => {
 
 // ### Functions for creating valid assembly commands based on VM language input
 const makeAsmCommand = (obj) => {
-    
-    // console.log(obj)
-    if (obj.command == 'push') {
-        return makeAsmCommandPush(obj)
-    } 
-    else if (obj.command == 'pop') {
-        return makeAsmCommandPop(obj)
-    } 
-    else {
-        return makeAsmCommandLogic(obj)
+
+    let secondMove = '-1' // set to -1 to appened -1 to A to move up 2 spots before returning (default)
+    switch (obj.command) {
+        case 'pop':
+            return makeAsmCommandPop(obj)
+            break;
+        case 'push':
+            return makeAsmCommandPush(obj)
+            break;
+        case 'sub':
+            logic = 'M-D'
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+            break;
+        case 'add':
+            logic = 'M+D'
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+            break;
+        case 'and':
+            logic = 'D&M'
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+            break;
+        case 'or':
+            logic = 'D|M'
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+            break;
+        case 'neg':
+            logic = '-D'
+            secondMove = '' // set to blank to remove from command stream and only consume 1 row
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+        case 'not':
+            logic = '!D'
+            secondMove = '' // set to blank to remove from command stream and only consume 1 row
+            return makeAsmCommandBasicLogic(obj, logic, secondMove)
+            break;
+        case 'gt':
+        case 'lt':
+        case 'eq':
+            return makeAsmCommandCompare(obj)
+            break;
+        default:
+            return ['NOT IMPLEMENTED']
     }
+
 }
 
 const makeAsmCommandPush = (obj) => {
@@ -76,7 +109,7 @@ const makeAsmCommandPush = (obj) => {
             `@SP`,
             `M=M+1`
         ]
-    } 
+    }
     else if (obj.location == 'static') {
         console.log(obj)
         let staticNum = Number(obj.arg) + 16
@@ -98,7 +131,6 @@ const makeAsmCommandPush = (obj) => {
             `D=A`,
             `@LCL`,
             `D=D+M`,
-            // `M=M-1`,  // ooops, we don't change this value, it's a base
             `A=D`,
             `D=M`,
             `@SP`,
@@ -114,7 +146,6 @@ const makeAsmCommandPush = (obj) => {
             `D=A`,
             `@ARG`,
             `D=D+M`,
-            // `M=M-1`, // ooops, we don't change this value, it's a base
             `A=D`,
             `D=M`,
             `@SP`,
@@ -130,7 +161,6 @@ const makeAsmCommandPush = (obj) => {
             `D=A`,
             `@THIS`,
             `D=D+M`,
-            // `M=M-1`,  // ooops, we don't change this value, it's a base
             `A=D`,
             `D=M`,
             `@SP`,
@@ -146,7 +176,6 @@ const makeAsmCommandPush = (obj) => {
             `D=A`,
             `@THAT`,
             `D=D+M`,
-            // `M=M-1`,  // ooops, we don't change this value, it's a base
             `A=D`,
             `D=M`,
             `@SP`,
@@ -164,11 +193,9 @@ const makeAsmCommandPush = (obj) => {
             `@SP`,
             `M=M+1`,
             `A=M-1`,
-            `M=D`,
-            // `@SP`, // not needed if combined above
-            // `M=M-1`
+            `M=D`
         ]
-    } 
+    }
     else if (obj.location == 'pointer') {
         let pointerNum = Number(obj.arg) + 3
         if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
@@ -187,7 +214,6 @@ const makeAsmCommandPush = (obj) => {
         return [`ELSE: INVALID PUSH`, ` (FOR NOW)`]
     }
 }
-
 const makeAsmCommandPop = (obj) => {
     console.log(obj)
     if (obj.location == 'static') {
@@ -202,13 +228,13 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } 
+    }
     else if (obj.location == 'local') {
         let localNum = Number(obj.arg) + 0 // unused??
-        return [
+        return [   
             `@${obj.arg}`,
             `D=A`,
-            `@LCL`,
+            `@LCL`,  // could refactore this for local/LCL, arg/ARG, this/THIS, that/THAT
             `D=D+M`,
             `@R13`,
             `M=D`,
@@ -221,7 +247,7 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } 
+    }
     else if (obj.location == 'argument') {
         let argNum = Number(obj.arg) + 0 // unused??
         return [
@@ -240,7 +266,7 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } 
+    }
     else if (obj.location == 'this') {
         let thisNum = Number(obj.arg) + 0 // unused??
         return [
@@ -259,7 +285,7 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } 
+    }
     else if (obj.location == 'that') {
         let thatNum = Number(obj.arg) + 0 // unused??
         return [
@@ -278,7 +304,7 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-    } 
+    }
     else if (obj.location == 'temp') {
         let tempNum = Number(obj.arg) + 5 // unused??
         if (tempNum > 12) { return 'TEMP VAR TOO LARGE (in pop)' }
@@ -292,7 +318,7 @@ const makeAsmCommandPop = (obj) => {
             `M=M-1`
         ]
 
-    } 
+    }
     else if (obj.location == 'pointer') {
         let pointerNum = Number(obj.arg) + 3
         if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
@@ -307,141 +333,45 @@ const makeAsmCommandPop = (obj) => {
         ]
 
     }
-    else { return [`POP: `, `NOT IMPLIMENTED YET`] }  // should use proper error reporting, this can cause failures if output isn't correct
+    else { return [`POP: `, `NOT IMPLIMENTED YET`] }  // should use proper error reporting, this causes unusable output vs failures if incorrect
 }
+const makeAsmCommandCompare = (obj) => {
+    uniqindx = uniqindx + 1
+    uniqueId = obj.uniqueName + "." + uniqindx
+    console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
 
-const makeAsmCommandLogic = (obj) => {
-    let logic = 'THIS SHOULD GET CHANGED'
-    let secondMove = '-1'
-    if (obj.command == 'sub') {
-        logic = 'M-D'
-        // secondMove assumed
-    }
-    if (obj.command == 'add') {
-        logic = 'M+D'
-        // secondMove assumed
-    }
-    if (obj.command == 'neg') {
-        logic = '-D'
-        secondMove = '' // don't move 2nd time (this will leave A=A)!!
-    }
-    if (obj.command == 'and') {
-        logic = 'D&M'
-        // secondMove assumed
-    }
-    if (obj.command == 'or') {
-        logic = 'D|M'
-        // secondMove assumed 
-    }
-    if (obj.command == 'not') {
-        logic = '!D'
-        secondMove = '' // don't move 2nd time (this will leave A=A)!!
-    }
-    if (obj.command == 'lt') {
-        uniqindx = uniqindx + 1
-        uniqueId = obj.uniqueName + "." + uniqindx
-        console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
-        return [
-            `@SP`,
-            `A=M-1`,
-            `D=M`,
-            `A=A-1`,
-            `D=M-D`,
-            `@IS.${uniqueId}`,
-            `D;JLT`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=0`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(IS.${uniqueId})`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=-1`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(END.${uniqueId})`,
-        ]
-
-    }
-    if (obj.command == 'gt') {
-        uniqindx = uniqindx + 1
-        return [
-            `@SP`,
-            `A=M-1`,
-            `D=M`,
-            `A=A-1`,
-            `D=M-D`,
-            `@IS.${uniqueId}`,
-            `D;JGT`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=0`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(IS.${uniqueId})`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=-1`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(END.${uniqueId})`
-        ]
-    }
-    if (obj.command == 'eq') {
-        uniqindx = uniqindx + 1
-        return [`@SP`,
-            `A=M-1`,
-            `D=M`,
-            `A=A-1`,
-            `D=M-D`,
-            `@IS.${uniqueId}`,
-            `D;JEQ`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=0`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(IS.${uniqueId})`,
-            `@SP`,
-            `A=M`,
-            `A=A-1`,
-            `A=A-1`,
-            `M=-1`,
-            `D=A+1`,
-            `@SP`,
-            `M=D`,
-            `@END.${uniqueId}`,
-            `0;JMP`,
-            `(END.${uniqueId})`,
-
-        ]
-    }
+    return [`@SP`,
+        `A=M-1`,
+        `D=M`,
+        `A=A-1`,
+        `D=M-D`,
+        `@IS.${uniqueId}`,
+        `D;J${obj.command.toUpperCase()}`,     // toUpperCase() and reference used to remove 3x code
+        `@SP`,
+        `A=M`,
+        `A=A-1`,
+        `A=A-1`,
+        `M=0`,
+        `D=A+1`,
+        `@SP`,
+        `M=D`,
+        `@END.${uniqueId}`,
+        `0;JMP`,
+        `(IS.${uniqueId})`,
+        `@SP`,
+        `A=M`,
+        `A=A-1`,
+        `A=A-1`,
+        `M=-1`,
+        `D=A+1`,
+        `@SP`,
+        `M=D`,
+        `@END.${uniqueId}`,
+        `0;JMP`,
+        `(END.${uniqueId})`,
+    ]
+}
+const makeAsmCommandBasicLogic = (obj, logic, secondMove) => {
 
     return [
         `@SP`,
@@ -456,8 +386,6 @@ const makeAsmCommandLogic = (obj) => {
 }
 
 // ### Path and filename modifications ###
-
-
 const extractFilename = (path) => {
     const pathArray = path.split("/");
     const lastIndex = pathArray.length - 1;
@@ -481,7 +409,7 @@ module.exports = {
     makeComObj,
     makeAsmCommand,
     extractFilename,
-    extractFilePath    
+    extractFilePath
 }
 
 

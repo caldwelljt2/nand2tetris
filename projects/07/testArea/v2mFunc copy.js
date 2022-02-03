@@ -51,7 +51,6 @@ const makeComObj = (array, uniqueName) => {
 
 // ### Functions for creating valid assembly commands based on VM language input
 const makeAsmCommand = (obj) => {
-    
     // console.log(obj)
     if (obj.command == 'push') {
         return makeAsmCommandPush(obj)
