@@ -1,7 +1,7 @@
 // ### Temp Test Area, should be safe to ignore
 
 // let testObj = { command: 'push', location: 'constant', arg: '888' }
-// let testObj2 = { command: 'sub' }
+let testObj2 = { command: 'return', uniqueName: 'someFilename'}
 
 // ### Start of function exports 
 let uniqindx = 0  // used to create unique symbol names in ASM files, dirty but works, leave global to avoid overlapping
@@ -14,7 +14,7 @@ const comments = /\/\*[\s\S]*?\*\/|\/\/.*/g
 const whitespace = /\s/g
 
 
-// ### Functions for creating clean arrays to work with
+// ### Functions for creating clean arrays or items to work with
 const removeComments = (string) => {
     return string.replace(comments, '')
 }
@@ -34,6 +34,8 @@ const cleanArray = (array) => {
     return cleanArray
 }
 
+const r = (arr, repeats) =>                 // for repeating single items x times (pair with ...)
+  Array.from({ length: repeats }, () => arr);
 
 // ### Make objects out of VM commands
 
@@ -51,6 +53,8 @@ const makeComObj = (array, uniqueName) => {
 }
 
 // ### Functions for creating valid assembly commands based on VM language input
+
+
 const makeAsmCommand = (obj) => {
 
     let secondMove = '-1' // set to -1 to appened -1 to A to move up 2 spots before returning (default)
@@ -91,6 +95,24 @@ const makeAsmCommand = (obj) => {
         case 'eq':
             return makeAsmCommandCompare(obj)
             break;
+        case 'label':
+            return [`(${obj.location})`]
+            break;
+        case 'goto':
+            return makeAsmCommandGoto(obj)
+            break;
+        case 'if-goto':
+            return makeAsmCommandIfGoto(obj)
+            break;
+        case 'function':
+            makeAsmCommandFunction(obj)
+            break;
+        case 'call':
+            return makeAsmCommandCall(obj)
+            break
+        case 'return':
+            return makeAsmCommandReturn(obj)
+            break
         default:
             return ['NOT IMPLEMENTED']
     }
@@ -231,7 +253,7 @@ const makeAsmCommandPop = (obj) => {
     }
     else if (obj.location == 'local') {
         let localNum = Number(obj.arg) + 0 // unused??
-        return [   
+        return [
             `@${obj.arg}`,
             `D=A`,
             `@LCL`,  // could refactore this for local/LCL, arg/ARG, this/THIS, that/THAT
@@ -384,6 +406,225 @@ const makeAsmCommandBasicLogic = (obj, logic, secondMove) => {
         `M=D`
     ]
 }
+const makeAsmCommandIfGoto = (obj) => {
+    return [
+        `@SP`,
+        `A=M-1`,
+        `D=M`,
+        `@${obj.location}`,
+        `D;JMP`
+    ]
+}
+const makeAsmCommandGoto = (obj) => {
+    return [
+        `@${obj.location}`,
+        `0;JMP`
+    ]
+}
+const makeAsmCommandFunction = (obj) => {
+    // get args #
+    // NEED FILE REFERENCE for calling merged .vm trees
+    
+    return [
+        // save return @address
+        'NOT',
+        'TESTED',
+        `@${'NEED LINK TO LABEL'}`,
+        'D=A', // save current location in program ?
+        '@SP',
+        // 'D=M', // save SP value in D - NO? we don't save pointer location, but above program location?
+        'A=M', // point A at the SP value
+        'M=D',  // save address for later use,
+        '@LCL', // goto current arg storage location
+        'D=M', // get ARG location in D,
+        '@SP', 
+        'A=M',
+        'A=A+1',
+        'M=D', 
+
+        '@ARG', 
+        'D=M',
+        '@SP', 
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'M=D', 
+
+        '@THIS', 
+        'D=M',
+        '@SP', 
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D', 
+
+        '@THAT', 
+        'D=M',
+        '@SP', 
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D', 
+
+// set
+        '@SP',
+        'A=M',
+        'A=M-1', // move up 1 for first arg
+        ...r('A=A-1',arg - 1), //repeate for # additional args
+        'D=A',
+        '@ARG',
+        'M=D',
+
+        '@SP',
+        'A=M',
+        ...r('A=A+1',5), 
+        'D=A',
+        '@LCL',
+        'M=D',
+        'A=M',
+            ...r(
+        'M=0,A=A+1' // these two commands repeate for each argument, set to 0, move down 1 x(arg) times
+            ,arg)[0].split(','), // clear new lcl while here? set to args?A=0
+//        'A=A+1', // go down 1 more for SP location - NOT NEEDED since above is setting 0 THEN moving
+        'D=A', // save to D
+        '@SP', // go to SP address storage
+        'M=D' // change pointer to new SP value
+        // copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
+        //create locals AND SET TO 0 ???
+        // change @args ??? to point at functions args, place at base @ARG?
+        // execute callers code (how does code get inserted here?)
+    ]
+}
+const makeAsmCommandCall = (obj) => {
+    return [
+        'NOT',
+        'TESTED',
+        `(${obj.location + 'RETURN'})`
+        `@${obj.location}`,
+        '0;JMP'
+                // return value to saved return address
+        // cleanup/recycle used mem (just moving @SP does this right?)
+        // return copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
+        // set @SP = new base address ?? (needs double checked)
+        // return to executing code @JMP ?
+    ]
+    
+}
+const makeAsmCommandReturn = (obj) => {
+    uniqindx = uniqindx + 1
+    uniqueId = obj.uniqueName + "." + uniqindx
+    console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
+        return [
+        'NOT',
+        'IMPLEMENTED',
+        // save returned value
+        '@SP', // go to sp
+        'A=M', // go to the line below last value
+        'A=A-1', // point above at last value
+        'D=A', // save in D
+        '@ARG', // goto ARG location (address)
+        'A=M', // goto location (base address)
+        'M=A', // leave answer in first arg space
+
+        // save return address to goto later (we'll be wiping out our point of reference with LCL)
+        '@LCL',
+        'A=M',
+        'A=A-1', // this (saved)
+        'A=A-1', // that (saved)
+        'A=A-1', // ARG (saved)
+        'A=A-1', // LCL (saved)
+        'A=A-1', // Return Address
+        'D=M', // saved return address
+        '@ARG', // current ARG location
+        'A=M', // go there
+        'A=A+1', // go down one
+        'M=D', // save return location in SP location (need to clear out later?)
+        'D=A', // get new SP location
+        '@SP', // goto SP pointer
+        'M=D', // save caller's SP location (SP now caller's reference)
+
+        // restore caller's state
+        // this
+        '@LCL',
+        'A=M',
+        'A=A-1', // this (saved)
+        'D=M',
+        'M=0',
+        '@THIS',
+        'M=D',
+
+        // that
+        '@LCL',
+        'A=M',
+        'A=A-1', // this (saved)
+        'A=A-1', // that (saved)
+        'D=M',
+        'M=0',
+        '@THAT',
+        'M=D',
+
+        // ARG
+        '@LCL',
+        'A=M',
+        'A=A-1', // this (saved)
+        'A=A-1', // that (saved)
+        'A=A-1', // ARG (saved)
+        'D=M',
+        'M=0',
+        '@THIS',
+        'M=D',
+        // LCL
+        '@LCL',
+        'A=M',
+        'A=A-1', // this (saved)
+        'A=A-1', // that (saved)
+        'A=A-1', // ARG (saved)
+        'A=A-1', // LCL (saved)
+        'D=A',
+        '@R13', // save top of ARGS for clearing later
+        'M=D',
+        'A=D',
+        'D=M',
+        'M=0', // CLEARED OUT LOCAL STORAGE all old values need to clear ARG area - DO @ END before jmp?
+        '@LCL',
+        'M=D',
+
+
+        '@SP', // obj doesn't contain location ???!?!?! put in SP ?
+        'D=M', // save return jump location
+        'M=0', // clear SP
+        'A=D',
+        '0;JMP',
+
+// below not done
+
+        'D=A', // save ARG location in D
+        '@R13',
+        'M=D',
+        `(CLEARARGS.${uniqueId})`,
+        
+
+// below temp added via notepad (need to clear BEFORe loop)
+// save a location in R13, then a. gets top, b. clears, c. compairs if next should clear, d. jumps back if needed else continues
+        // (label)
+        // @R15 (temp)
+        // D=M
+        // @SP
+        // D=D-M
+        // @label
+        // D;JGE (jump if > 0 )
+        // M=0
+
+                // return value to saved return address
+        // cleanup/recycle used mem (just moving @SP does this right?)
+        // return copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
+        // set @SP = new base address ?? (needs double checked)
+        // return to executing code @JMP ?
+    ]
+}
 
 // ### Path and filename modifications ###
 const extractFilename = (path) => {
@@ -415,4 +656,5 @@ module.exports = {
 
 
 // ### Debug Area (i still use console.log) ###
-// console.log(makeAsmCommand(testObj2))
+console.log(makeAsmCommand(testObj2))
+// console.log(makeAsmCommandReturn(testObj2))
