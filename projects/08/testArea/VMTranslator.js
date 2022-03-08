@@ -33,8 +33,9 @@ fs.readFile(fileNameInput, 'utf8', function (err, vmCode) {
     const codeArray = makeArray(vmCodeNoCom)
     const usableArray = cleanArray(codeArray)
     const codeWithObj = makeComObj(usableArray, uniqueName)
-
+    // console.log(codeWithObj)
     const outArray = codeWithObj.map((line) => {
+        // console.log(line)
         return makeAsmCommand(line).join('\r\n') // make command as an array then join them here for simplicity
     })
 
@@ -52,3 +53,5 @@ fs.readFile(fileNameInput, 'utf8', function (err, vmCode) {
     // console.log(finalOutputAsString) //  Check output
     // console.log(usableArray)
 })
+
+

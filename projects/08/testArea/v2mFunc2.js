@@ -1,12 +1,12 @@
 // ### Temp Test Area, should be safe to ignore
 
 // let testObj = { command: 'push', location: 'constant', arg: '888' }
-// let testObj2 = {
-//     command: 'function',
-//     location: 'SimpleFunction.test',
-//     arg: '2',
-//     uniqueName: 'SimpleFunction'
-//   }
+let testObj2 = {
+    command: 'function',
+    location: 'Main.fibonacci',
+    arg: '-1',
+    uniqueName: 'Main.vm'
+  }
 
 // ### Start of function exports 
 let uniqindx = 0  // used to create unique symbol names in ASM files, dirty but works, leave global to avoid overlapping
@@ -22,7 +22,7 @@ const whitespace = /\s/g
 // ### Functions for creating clean arrays or items to work with
 const removeComments = (string) => {
     return string.replace(comments, '')
-}
+} 
 
 const makeArray = (string) => {
     // to accept files with any variation of /r /n, /r/n, etc
@@ -39,14 +39,14 @@ const cleanArray = (array) => {
     return cleanArray
 }
 
-const r = (arr, repeats) =>   {
-    if (repeats < 0) {
-        repeats = 0
+const r = (arr, repeats) => {
+    if (repeats < 1) {
+        repeats = 1
     }
-    console.log('moo',arr, repeats)
-    const newArr = Array.from({ length: repeats }, () => arr);
-    console.log('moo2',arr)
-    return arr
+    // console.log('moo', arr, repeats)
+    // const newArr = ;
+    // console.log('moo2', arr)
+    return Array.from({ length: repeats }, () => arr)
 }              // for repeating single items x times (pair with ...)
 
 // ### Make objects out of VM commands
@@ -55,7 +55,7 @@ const makeComObj = (array, uniqueName) => {
     const arrayWithObj = array.map((line) => {
         // console.log(line)
         let lineAsArray = line.split(" ")
-        let obj = {command:'default',location:'default',arg:'0',uniqueName:'default'}
+        let obj = { command: 'default', location: 'default', arg: '0', uniqueName: 'default' }
         obj.command = lineAsArray[0]
         obj.location = lineAsArray[1]
         obj.arg = lineAsArray[2]
@@ -130,7 +130,7 @@ const makeAsmCommand = (obj) => {
             return makeAsmCommandReturn(obj)
             break
         default:
-            return ['NOT IMPLEMENTED','AT SWITCH']
+            return ['NOT IMPLEMENTED', 'AT SWITCH']
     }
 
 }
@@ -149,7 +149,7 @@ const makeAsmCommandPush = (obj) => {
         ]
     }
     else if (obj.location == 'static') {
-        console.log(obj)
+        // console.log(obj)
         let staticNum = Number(obj.arg) + 16
         if (staticNum > 255) { return 'STATIC VAR TOO LARGE (in push)' }
         return [
@@ -226,6 +226,7 @@ const makeAsmCommandPush = (obj) => {
         let tempNum = Number(obj.arg) + 5 // unused??
         if (tempNum > 12) { return 'TEMP VAR TOO LARGE (in push)' }
         return [
+            `// push temp number @${tempNum}`,
             `@${tempNum}`,
             `D=M`,
             `@SP`,
@@ -238,6 +239,7 @@ const makeAsmCommandPush = (obj) => {
         let pointerNum = Number(obj.arg) + 3
         if (pointerNum > 4) { return 'Pointer VAR TOO LARGE (in pop)' }
         return [
+            `// push pointer @${pointerNum}`,
             `@${pointerNum}`,
             `D=M`,
             `@SP`,
@@ -245,19 +247,20 @@ const makeAsmCommandPush = (obj) => {
             `A=M-1`,
             `M=D`,
         ]
-        
+
     }
     else {
-        console.log(obj)
+        // console.log(obj)
         return [`ELSE: INVALID PUSH`, ` (FOR NOW)`]
     }
 }
 const makeAsmCommandPop = (obj) => {
-    console.log(obj)
+    // console.log(obj)
     if (obj.location == 'static') {
         let staticNum = Number(obj.arg) + 16
         if (staticNum > 255) { return 'STATIC VAR TOO LARGE (in pop)' }
         return [
+            `// pop static @${staticNum}`,
             `@SP`,
             `A=M-1`,
             `D=M`,
@@ -270,6 +273,7 @@ const makeAsmCommandPop = (obj) => {
     else if (obj.location == 'local') {
         let localNum = Number(obj.arg) + 0 // unused??
         return [
+            `// pop local @${obj.arg}`,
             `@${obj.arg}`,
             `D=A`,
             `@LCL`,  // could refactore this for local/LCL, arg/ARG, this/THIS, that/THAT
@@ -357,7 +361,7 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-        
+
     }
     else if (obj.location == 'pointer') {
         let pointerNum = Number(obj.arg) + 3
@@ -372,50 +376,50 @@ const makeAsmCommandPop = (obj) => {
             `@SP`,
             `M=M-1`
         ]
-        
+
     }
     else { return [`POP: `, `NOT IMPLIMENTED YET`] }  // should use proper error reporting, this causes unusable output vs failures if incorrect
 }
 const makeAsmCommandCompare = (obj) => {
     uniqindx = uniqindx + 1
     uniqueId = obj.uniqueName + "." + uniqindx
-    console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
-    
+    // console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
+
     return [
-    `// a Jump command to J${obj.command.toUpperCase()} using uniqueID ${uniqueId}`,
-    `@SP`,
-    `A=M-1`,
-    `D=M`,
-    `A=A-1`,
-    `D=M-D`,
-    `@IS.${uniqueId}`,
-    `D;J${obj.command.toUpperCase()}`,     // toUpperCase() and reference used to remove 3x code
-    `@SP`,
-    `A=M`,
-    `A=A-1`,
-    `A=A-1`,
-    `M=0`,
-    `D=A+1`,
-    `@SP`,
-    `M=D`,
-    `@END.${uniqueId}`,
-    `0;JMP`,
-    `(IS.${uniqueId})`,
-    `@SP`,
-    `A=M`,
-    `A=A-1`,
-    `A=A-1`,
-    `M=-1`,
-    `D=A+1`,
-    `@SP`,
-    `M=D`,
-    `@END.${uniqueId}`,
-    `0;JMP`,
-    `(END.${uniqueId})`,
-]
+        `// a Jump command to J${obj.command.toUpperCase()} using uniqueID ${uniqueId}`,
+        `@SP`,
+        `A=M-1`,
+        `D=M`,
+        `A=A-1`,
+        `D=M-D`,
+        `@IS.${uniqueId}`,
+        `D;J${obj.command.toUpperCase()}`,     // toUpperCase() and reference used to remove 3x code
+        `@SP`,
+        `A=M`,
+        `A=A-1`,
+        `A=A-1`,
+        `M=0`,
+        `D=A+1`,
+        `@SP`,
+        `M=D`,
+        `@END.${uniqueId}`,
+        `0;JMP`,
+        `(IS.${uniqueId})`,
+        `@SP`,
+        `A=M`,
+        `A=A-1`,
+        `A=A-1`,
+        `M=-1`,
+        `D=A+1`,
+        `@SP`,
+        `M=D`,
+        `@END.${uniqueId}`,
+        `0;JMP`,
+        `(END.${uniqueId})`,
+    ]
 }
 const makeAsmCommandBasicLogic = (obj, logic, secondMove) => {
-    
+
     return [
         `// Logic >${logic}< aka Arithmatic with secondmove set to > ${secondMove}<`,
         `@SP`,
@@ -449,6 +453,95 @@ const makeAsmCommandFunction = (obj) => {
     // get args #
     // NEED FILE REFERENCE for calling merged .vm trees
     // console.log(obj)
+    let arr1 = [
+        // save return @address
+        // 'NOT',
+        // 'TESTED',
+        `// function ${obj.uniqueName}`,
+        `(${obj.uniqueName})`,
+        'D=A', // save current location in program ?
+        '@SP',
+        // 'D=M', // save SP value in D - NO? we don't save pointer location, but above program location?
+        'A=M', // point A at the SP value
+        'M=D',  // save address for later use,
+        '@LCL', // goto current arg storage location
+        'D=M', // get ARG location in D,
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'M=D',
+
+        '@ARG',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        '@THIS',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        '@THAT',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        // set
+        '@SP',
+        'A=M',
+        'A=M-1', // move up 1 for first arg
+    ]
+
+    let arr2 = [
+        ...r('A=A-1', obj.arg - 1), //repeate for # additional args
+    ]
+
+    let arr3 = [
+        'D=A',
+        '@ARG',
+        'M=D',
+
+        '@SP',
+        'A=M',
+    ]
+    let arr4 = [
+        ...r('A=A+1', 5),
+    ]
+    let arr5 = [
+        'D=A',
+        '@LCL',
+        'M=D',
+        'A=M',
+    ]
+    let arr6 = [
+        // these two commands repeate for each argument, set to 0, move down 1 x(arg) times
+        ...r('M=0,A=A+1', obj.arg)//[0].split(','), // clear new lcl while here? set to args?A=0
+    ]
+    let arr7 = [
+        //        'A=A+1', // go down 1 more for SP location - NOT NEEDED since above is setting 0 THEN moving
+        'D=A', // save to D
+        '@SP', // go to SP address storage
+        'M=D' // change pointer to new SP value
+        // copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
+        //create locals AND SET TO 0 ???
+        // change @args ??? to point at functions args, place at base @ARG?
+        // execute callers code (how does code get inserted here?)
+    ]
+    
+    // console.log(arr2, arr4, arr6,)
+
     return [
         // save return @address
         // 'NOT',
@@ -462,58 +555,58 @@ const makeAsmCommandFunction = (obj) => {
         'M=D',  // save address for later use,
         '@LCL', // goto current arg storage location
         'D=M', // get ARG location in D,
-        '@SP', 
-        'A=M',
-        'A=A+1',
-        'M=D', 
-
-        '@ARG', 
-        'D=M',
-        '@SP', 
-        'A=M',
-        'A=A+1',
-        'A=A+1',
-        'M=D', 
-
-        '@THIS', 
-        'D=M',
-        '@SP', 
-        'A=M',
-        'A=A+1',
-        'A=A+1',
-        'A=A+1',
-        'M=D', 
-
-        '@THAT', 
-        'D=M',
-        '@SP', 
-        'A=M',
-        'A=A+1',
-        'A=A+1',
-        'A=A+1',
-        'A=A+1',
-        'M=D', 
-
-// set
         '@SP',
         'A=M',
+        'A=A+1',
+        'M=D',
+
+        '@ARG',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        '@THIS',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        '@THAT',
+        'D=M',
+        '@SP',
+        'A=M',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'A=A+1',
+        'M=D',
+
+        // set
+        '@SP',
+        // 'A=M',
         'A=M-1', // move up 1 for first arg
-        ...r('A=A-1',obj.arg - 1), //repeate for # additional args
+        ...r('A=A-1', obj.arg - 1), //repeate for # additional args
         'D=A',
         '@ARG',
         'M=D',
 
         '@SP',
         'A=M',
-        ...r('A=A+1',5), 
+        ...r('A=A+1', 5),
         'D=A',
         '@LCL',
         'M=D',
         'A=M',
-            ...r(
-        'M=0,A=A+1' // these two commands repeate for each argument, set to 0, move down 1 x(arg) times
-            ,obj.arg)[0].split(','), // clear new lcl while here? set to args?A=0
-//        'A=A+1', // go down 1 more for SP location - NOT NEEDED since above is setting 0 THEN moving
+        ...r(
+            'M=0,A=A+1' // these two commands repeate for each argument, set to 0, move down 1 x(arg) times
+            , obj.arg)[0].split(','), // clear new lcl while here? set to args?A=0
+        //        'A=A+1', // go down 1 more for SP location - NOT NEEDED since above is setting 0 THEN moving
         'D=A', // save to D
         '@SP', // go to SP address storage
         'M=D' // change pointer to new SP value
@@ -530,19 +623,19 @@ const makeAsmCommandCall = (obj) => {
         `(${obj.location + 'RETURN'})`,
         `@${obj.location}`,
         '0;JMP'
-                // return value to saved return address
+        // return value to saved return address
         // cleanup/recycle used mem (just moving @SP does this right?)
         // return copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
         // set @SP = new base address ?? (needs double checked)
         // return to executing code @JMP ?
     ]
-    
+
 }
 const makeAsmCommandReturn = (obj) => {
     uniqindx = uniqindx + 1
     uniqueId = obj.uniqueName + "." + uniqindx
-    console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
-        return [
+    // console.log('the unique number is ' + uniqindx + ' and name is ' + obj.uniqueName)
+    return [
         // 'NOT',
         // 'IMPLEMENTED',
         // save returned value
@@ -621,7 +714,7 @@ const makeAsmCommandReturn = (obj) => {
         '@R13',
         'D=M',
         'A=M',
-        'M=0', 
+        'M=0',
         '@SP',
         'D=D-M',
         `@CLEARARGS.${uniqueId}`,
@@ -632,16 +725,16 @@ const makeAsmCommandReturn = (obj) => {
         'A=D',
         '0;JMP',
 
-// below not done
+        // below not done
 
         // 'D=A', // save ARG location in D
         // '@R13',
         // 'M=D',
         // `(CLEARARGS.${uniqueId})`,
-        
 
-// below temp added via notepad (need to clear BEFORe loop)
-// save a location in R13, then a. gets top, b. clears, c. compairs if next should clear, d. jumps back if needed else continues
+
+        // below temp added via notepad (need to clear BEFORe loop)
+        // save a location in R13, then a. gets top, b. clears, c. compairs if next should clear, d. jumps back if needed else continues
         // (label)
         // @R15 (temp)
         // D=M
@@ -651,7 +744,7 @@ const makeAsmCommandReturn = (obj) => {
         // D;JGE (jump if > 0 )
         // M=0
 
-                // return value to saved return address
+        // return value to saved return address
         // cleanup/recycle used mem (just moving @SP does this right?)
         // return copy caller data @(lcl,arg,this,that) (local range? or is the higher resonsibility?)
         // set @SP = new base address ?? (needs double checked)
@@ -689,6 +782,6 @@ module.exports = {
 
 
 // ### Debug Area (i still use console.log) ###
-// console.log(makeAsmCommand(testObj2)) 
+// console.log(makeAsmCommand(testObj2))
 // console.log(makeComObj([function SimpleFunction.test 2], 'simplefu'))
 // console.log(makeAsmCommandReturn(testObj2))
